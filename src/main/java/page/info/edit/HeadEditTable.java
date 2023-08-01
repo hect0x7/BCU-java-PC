@@ -285,6 +285,10 @@ class HeadEditTable extends Page {
 		abler(false);
 	}
 
+	public void input(JTF jtf, Object o){
+		input(jtf, String.valueOf(o));
+	}
+
 	private void input(JTF jtf, String str) {
 		if (sta == null)
 			return;

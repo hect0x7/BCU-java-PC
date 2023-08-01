@@ -3,13 +3,20 @@ package page.info.edit;
 import common.pack.PackData.UserPack;
 import common.pack.UserProfile;
 import common.util.stage.MapColc;
+import common.util.stage.SCDef;
 import common.util.stage.Stage;
 import common.util.stage.StageMap;
 import common.util.stage.info.CustomStageInfo;
 import common.util.unit.AbEnemy;
 import common.util.unit.EneRand;
 import common.util.unit.Enemy;
+import custom.Analyser;
+import custom.Fio.FileChooserService;
+import custom.ReflectUtils;
+import java.awt.event.ActionEvent;
+import main.Opts;
 import page.JBTN;
+import page.MainLocale;
 import page.Page;
 import page.battle.BattleSetupPage;
 import page.battle.StRecdPage;
@@ -20,10 +27,10 @@ import page.support.RLFIM;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.Vector;
+import java.io.File;
+import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class StageEditPage extends Page {
 
@@ -158,6 +165,7 @@ public class StageEditPage extends Page {
 
 		set(veif, x, y, 600, 0, 300, 50);
 		set(jspe, x, y, 600, 50, 300, 1250);
+		set(importBTN, x, y, 1300, 400, 200, 50);
 		jt.setRowHeight(size(x, y, 50));
 	}
 
@@ -366,7 +374,8 @@ public class StageEditPage extends Page {
 		addListeners$0();
 		addListeners$1();
 		addListeners$2();
-
+		add(importBTN);
+		importBTN.addActionListener(this::selectStages);
 	}
 
 	private void setAA(StageMap sm) {
@@ -472,5 +481,213 @@ public class StageEditPage extends Page {
 		jspjt.scrollRectToVisible(new Rectangle(0, 0, 1, 1));
 		resized();
 	}
+
+	/* modify part begin */
+
+	private final JBTN importBTN = new JBTN(0, "importStage");
+
+	@SuppressWarnings("unchecked")
+	private void handleStageData(Map<String, Object> stageData) throws IllegalAccessException {
+		// handle enemy
+		getStrategy((ArrayList<List<Integer>>) stageData.get("enemy"));
+
+		// handle stage config
+		ReflectUtils.invokeField(info, stageData, info::input);
+
+		// finish all, setData
+		setData(stage);
+	}
+
+	/**
+	 * this method can only accept one file as stage.
+	 */
+	private void selectSingleStage(ActionEvent arg0) {
+		if (stage == null) {
+			Opts.pop("please select a stage first!", "Tip");
+			return;
+		}
+
+		File file = FileChooserService.getFile();
+
+		if (file != null) {
+			System.out.println("select file:" + file.getAbsolutePath());
+
+			try {
+				// get Data
+				Map<String, Object> stageData = Analyser.getStageBaseAndEnemyData(file);
+				handleStageData(stageData);
+
+			} catch (Exception e) {
+				e.printStackTrace();
+				Opts.pop("the selected file is unfitted: " + e.getMessage(), "Error");
+			}
+		}
+	}
+
+	/**
+	 * this method can accept several files as stages and add them to StageMap <br>
+	 * usage:
+	 * <pre>
+	 * put these files in directory which path = ./raw/
+	 * MapStageDataNA_043.csv
+	 * stageRNA043_00.csv
+	 * stageRNA043_01.csv
+	 * stageRNA043_02.csv
+	 * stageRNA043_03.csv
+	 * stageRNA043_04.csv
+	 * stageRNA043_05.csv
+	 * </pre>
+	 */
+	private void selectStages(ActionEvent arg0) {
+		String root = "./raw/";
+		File file = new File(root);
+		String[] raw_files_list;
+		if (file.exists()) {
+			raw_files_list = file.list();
+			assert raw_files_list != null;
+		} else {
+			selectSingleStage(arg0);
+			return;
+		}
+
+		if (jlst == null || jlst.ic == null) {
+			Opts.pop(MainLocale.getLoc(MainLocale.PAGE, "tip-import-stageMap1"), "Tip");
+			return;
+		}
+
+		/*-----------------------------------------------------*/
+		ArrayList<File> musicFiles = new ArrayList<>();
+
+		// get music file
+		for (String each : raw_files_list) {
+			if (each.startsWith("MapStageData")) {
+				musicFiles.add(new File(root + each));
+			}
+		}
+
+		if (musicFiles.isEmpty()) {
+			if (Opts.conf(MainLocale.getLoc(MainLocale.PAGE, "tip-import-stageMap2"))) {
+				selectSingleStage(arg0);
+			}
+			return;
+		}
+
+		// get stage file
+
+		musicFiles.forEach((musicFile) -> {
+			// MapStageDataNA_042.csv
+			String id = musicFile.getName().split("_")[1].substring(0, 3);
+			System.out.println("id=" + id);
+			// stageRNA042_00
+			List<File> stageFiles = Arrays.stream(raw_files_list)
+													.filter(s -> s.startsWith("stageRNA" + id))
+													.map("./raw/"::concat)
+													.map(File::new)
+													.collect(Collectors.toList());
+
+			Map<Integer, int[]> stage_music_map = Analyser.getStageMusicData(musicFile);
+
+			try {
+				for (int i = 0; i < stageFiles.size(); i++) {
+					File stageFile_i = stageFiles.get(i);
+
+					Map<String, Object> stageData_i = Analyser.getStageBaseAndEnemyData(stageFile_i);
+
+					int[] musicData_i = stage_music_map.get(i);
+					stageData_i.put("name", "csv_stage_" + id + "-" + i);
+					stageData_i.put("jm0", musicData_i[0]);
+					stageData_i.put("jmh", musicData_i[1]);
+					stageData_i.put("jm1", musicData_i[2]);
+
+					// target stage
+					jlst.addItem(jlsm.getSelectedValue());
+
+					handleStageData(stageData_i);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				Opts.pop(MainLocale.getLoc(MainLocale.PAGE, "tip-popErr-prefix")+ e.getMessage(), "Error");
+			}
+
+		});
+	}
+
+	private void getStrategy(ArrayList<List<Integer>> enemy) {
+
+		int selectedRowIndex = jt.getSelectedRow();
+		if (selectedRowIndex == -1) {
+			// didn't select a line of table
+			strategy1(enemy);
+		} else {
+			// select a line of table
+			strategy2(enemy, selectedRowIndex);
+		}
+	}
+
+	/**
+	 * cover the stage
+	 */
+	private void strategy1(ArrayList<List<Integer>> enemy) {
+		if (enemy != null) {
+			ArrayList<SCDef.Line> lines = new ArrayList<>(enemy.size());
+
+			enemy.forEach((eachEnemy) -> {
+				int index = eachEnemy.get(0) - 2;
+				if (index >= jle.getModel().getSize()) {
+					// which means it's a new BC enemy that BCU haven't added.
+					index = 20;
+				}
+				AbEnemy abEnemy = jle.getModel().getElementAt(index);
+				this.addLine(abEnemy, Analyser.ArrayIntegerToInt(eachEnemy, 1), lines);
+			});
+
+			jt.stage.datas = Analyser.toReverseArrays(lines, new SCDef.Line[0]);
+		}
+	}
+
+	/**
+	 * append to the stage
+	 */
+	private void strategy2(ArrayList<List<Integer>> enemy, int selectRowIndex) {
+		if (enemy != null) {
+			SCDef.Line[] data = jt.stage.datas;
+			ArrayList<SCDef.Line> lines = new ArrayList<>(enemy.size() + data.length);
+			int i;
+			int splitIndex = data.length - selectRowIndex - 1;
+
+			for (i = data.length - 1; i >= splitIndex; i--) {
+				lines.add(data[i]);
+			}
+
+			enemy.forEach((List<Integer> eachEnemy) -> this.addLine(jle.getModel().getElementAt(eachEnemy.get(0) - 2),
+																	Analyser.ArrayIntegerToInt(eachEnemy, 1), lines));
+
+			for (i = 0; i < splitIndex; i++) {
+				lines.add(data[i]);
+			}
+
+			jt.stage.datas = Analyser.toReverseArrays(lines, new SCDef.Line[0]);
+		}
+	}
+
+	public synchronized void addLine(AbEnemy enemy, int[] enemyData, ArrayList<SCDef.Line> lines) {
+		if (stage == null) return;
+		SCDef.Line line = new SCDef.Line();
+		line.enemy = enemy == null ? null : enemy.getID();
+		line.number = enemyData[0];
+		line.castle_0 = enemyData[4];
+		line.layer_0 = enemyData[5];
+		line.layer_1 = enemyData[6];
+		line.multiple = enemyData[8];
+		line.mult_atk = enemyData[8];
+		line.boss = enemyData[7];
+		line.spawn_0 = enemyData[1];
+		line.spawn_1 = enemyData[1];
+		line.respawn_0 = enemyData[2];
+		line.respawn_1 = enemyData[2];
+		lines.add(line);
+	}
+
+	/* modify part end */
 
 }
