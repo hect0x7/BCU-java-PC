@@ -44,7 +44,7 @@ public class StageEditTable extends AbJTable implements Reorderable {
 		title = Page.get(MainLocale.INFO, "t", 10);
 	}
 
-	private SCDef stage;
+	public SCDef stage;
 	private final Page page;
 	private final UserPack pack;
 
