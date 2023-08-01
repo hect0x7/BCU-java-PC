@@ -1,5 +1,7 @@
 package custom;
 
+import common.io.BCUException;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -7,7 +9,7 @@ import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public abstract class Analyser {
+public abstract class StageImportAnalyser {
 
     private static final String[][] TRANSLATIONS = {
             {"jcas"},
@@ -87,7 +89,7 @@ public abstract class Analyser {
         String[] lineTranslations = TRANSLATIONS[index >= TRANSLATIONS.length ? TRANSLATIONS.length - 1 : index];
         int length = lineTranslations.length;
         if (length > rawData.length) {
-            throw new CustomException("mismatching data, line=" + index);
+            throw new BCUException("mismatching data, line=" + index);
         }
 
         if (index <= 1) {

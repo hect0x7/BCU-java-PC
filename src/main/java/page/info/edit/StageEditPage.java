@@ -10,8 +10,8 @@ import common.util.stage.info.CustomStageInfo;
 import common.util.unit.AbEnemy;
 import common.util.unit.EneRand;
 import common.util.unit.Enemy;
-import custom.Analyser;
-import custom.Fio.FileChooserService;
+import custom.StageImportAnalyser;
+import custom.Fio.FileSelectUtil;
 import custom.ReflectUtils;
 
 import java.awt.event.ActionEvent;
@@ -33,7 +33,6 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.*;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class StageEditPage extends Page {
@@ -511,14 +510,14 @@ public class StageEditPage extends Page {
             return;
         }
 
-        File file = FileChooserService.getFile();
+        File file = FileSelectUtil.getFile();
 
         if (file != null) {
             System.out.println("select file:" + file.getAbsolutePath());
 
             try {
                 // get Data
-                Map<String, Object> stageData = Analyser.getStageBaseAndEnemyData(file);
+                Map<String, Object> stageData = StageImportAnalyser.getStageBaseAndEnemyData(file);
                 handleStageData(stageData);
 
             } catch (Exception e) {
@@ -589,13 +588,13 @@ public class StageEditPage extends Page {
                                           .map(File::new)
                                           .collect(Collectors.toList());
 
-            Map<Integer, int[]> stage_music_map = Analyser.getStageMusicData(musicFile);
+            Map<Integer, int[]> stage_music_map = StageImportAnalyser.getStageMusicData(musicFile);
 
             try {
                 for (int i = 0; i < stageFiles.size(); i++) {
                     File stageFile_i = stageFiles.get(i);
 
-                    Map<String, Object> stageData_i = Analyser.getStageBaseAndEnemyData(stageFile_i);
+                    Map<String, Object> stageData_i = StageImportAnalyser.getStageBaseAndEnemyData(stageFile_i);
 
                     int[] musicData_i = stage_music_map.get(i);
                     stageData_i.put("name", "csv_stage_" + id + "-" + i);
@@ -642,10 +641,10 @@ public class StageEditPage extends Page {
                     index = 20;
                 }
                 AbEnemy abEnemy = jle.getModel().getElementAt(index);
-                this.addLine(abEnemy, Analyser.ArrayIntegerToInt(eachEnemy, 1), lines);
+                this.addLine(abEnemy, StageImportAnalyser.ArrayIntegerToInt(eachEnemy, 1), lines);
             });
 
-            jt.stage.datas = Analyser.toReverseArrays(lines, new SCDef.Line[0]);
+            jt.stage.datas = StageImportAnalyser.toReverseArrays(lines, new SCDef.Line[0]);
         }
     }
 
@@ -664,13 +663,13 @@ public class StageEditPage extends Page {
             }
 
             enemy.forEach((List<Integer> eachEnemy) -> this.addLine(jle.getModel().getElementAt(eachEnemy.get(0) - 2),
-                                                                    Analyser.ArrayIntegerToInt(eachEnemy, 1), lines));
+                                                                    StageImportAnalyser.ArrayIntegerToInt(eachEnemy, 1), lines));
 
             for (i = 0; i < splitIndex; i++) {
                 lines.add(data[i]);
             }
 
-            jt.stage.datas = Analyser.toReverseArrays(lines, new SCDef.Line[0]);
+            jt.stage.datas = StageImportAnalyser.toReverseArrays(lines, new SCDef.Line[0]);
         }
     }
 

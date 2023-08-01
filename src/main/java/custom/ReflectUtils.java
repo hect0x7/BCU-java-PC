@@ -6,7 +6,7 @@ import java.util.function.BiConsumer;
 
 public abstract class ReflectUtils {
 
-    @SuppressWarnings({"unchecked"})
+    @SuppressWarnings("unchecked")
     public static <T, K> void invokeField(Object o,
                                           Map<String, K> valueMap,
                                           BiConsumer<T, K> doSth) throws IllegalAccessException {

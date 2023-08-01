@@ -6,29 +6,29 @@ import java.awt.*;
 import java.io.File;
 
 
-public class StdFileChooser extends AbstractFileChooser {
+public class FileSelectorImpl extends AbstractFileSelector {
     private final Component parent;
     private FileNameExtensionFilter extensionFilter;
     private File defaultFile;
     private File defaultDirectory;
 
-    public StdFileChooser(JFrame f, File defaultFile, FileNameExtensionFilter filter) {
+    public FileSelectorImpl(JFrame f, File defaultFile, FileNameExtensionFilter filter) {
         this(f, defaultFile);
         extensionFilter = filter;
     }
 
-    public StdFileChooser(Component parent) {
+    public FileSelectorImpl(Component parent) {
         this.parent = parent;
     }
 
-    public StdFileChooser(Component parent, File defaultFile) {
+    public FileSelectorImpl(Component parent, File defaultFile) {
         this(parent);
         this.defaultFile = defaultFile;
         this.defaultDirectory = defaultFile == null ? null : defaultFile.getParentFile();
     }
 
     @Override
-    protected String setTitle() {
+    public String setTitle() {
         return "Choose File";
     }
 
@@ -42,22 +42,17 @@ public class StdFileChooser extends AbstractFileChooser {
     }
 
     @Override
-    protected boolean handleWhenSaveExists() {
-        return false;
-    }
-
-    @Override
-    protected FileNameExtensionFilter getFileNameExtensionFilter() {
+    public FileNameExtensionFilter getFileNameExtensionFilter() {
         return extensionFilter;
     }
 
     @Override
-    protected Component getParentFrame() {
+    public Component getParentFrame() {
         return parent;
     }
 
     @Override
-    protected File getDefaultFile() {
+    public File getDefaultFile() {
         return defaultFile == null ? getTarget() : defaultFile;
     }
 }
