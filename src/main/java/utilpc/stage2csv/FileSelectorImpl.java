@@ -1,4 +1,4 @@
-package custom.Fio;
+package utilpc.stage2csv;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;

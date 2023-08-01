@@ -10,13 +10,13 @@ import common.util.stage.info.CustomStageInfo;
 import common.util.unit.AbEnemy;
 import common.util.unit.EneRand;
 import common.util.unit.Enemy;
-import custom.StageImportAnalyser;
-import custom.Fio.FileSelectUtil;
-import custom.ReflectUtils;
+import utilpc.stage2csv.StageImportAnalyser;
+import utilpc.stage2csv.FileSelectUtil;
+import utilpc.stage2csv.ReflectUtil;
 
 import java.awt.event.ActionEvent;
 
-import custom.StageExporter;
+import utilpc.stage2csv.StageExporter;
 import main.Opts;
 import page.JBTN;
 import page.MainLocale;
@@ -495,7 +495,7 @@ public class StageEditPage extends Page {
         getStrategy((ArrayList<List<Integer>>) stageData.get("enemy"));
 
         // handle stage config
-        ReflectUtils.invokeField(info, stageData, info::input);
+        ReflectUtil.invokeField(info, stageData, info::input);
 
         // finish all, setData
         setData(stage);

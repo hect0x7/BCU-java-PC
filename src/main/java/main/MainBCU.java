@@ -366,7 +366,7 @@ public class MainBCU {
 			System.exit(0);
 
 		MenuBarHandler.initialize();
-		// BCJSON.check();
+		BCJSON.check();
 		CommonStatic.ctx.initProfile();
 
 		BCUReader.getData$1();

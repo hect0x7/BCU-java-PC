@@ -1,10 +1,10 @@
-package custom;
+package utilpc.stage2csv;
 
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-public abstract class ReflectUtils {
+public abstract class ReflectUtil {
 
     @SuppressWarnings("unchecked")
     public static <T, K> void invokeField(Object o,
