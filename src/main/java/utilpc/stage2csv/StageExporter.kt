@@ -3,10 +3,6 @@ package utilpc.stage2csv
 import javax.swing.JButton
 import javax.swing.text.JTextComponent
 
-/**
- * @author Straw
- * @since 2023/8/1
- */
 class StageExporter {
 
 	val writeData = ArrayList<Array<String>>()
