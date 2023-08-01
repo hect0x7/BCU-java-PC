@@ -12,11 +12,10 @@ public abstract class Analyser {
     private static final String[][] TRANSLATIONS = {
             {"jcas"},
             {"jlen", "jhea", "", "", "jbg", "jmax"},
-            {"enemyIndex", "number", "start/2", "respawn1", "respawn2", "BHPercent",
-             "layer1", "layer2", "isBoss", "multiple"}
+            {"enemyIndex", "number", "start/2", "respawn1", "respawn2", "BHPercent", "layer1", "layer2", "isBoss", "multiple"}
     };
 
-    public static void read_csv_file(File file, BiConsumer<String, Integer> doSth) {
+    public static void readCsvFile(File file, BiConsumer<String, Integer> doSth) {
         BufferedReader reader = null;
 
         try {
@@ -53,7 +52,7 @@ public abstract class Analyser {
 
     public static Map<String, Object> getStageBaseAndEnemyData(File file) {
         Map<String, Object> stageData = new HashMap<>();
-        read_csv_file(file, (line, index) -> lineIntoMap(index, line.split(","), stageData));
+        readCsvFile(file, (line, index) -> lineIntoMap(index, line.split(","), stageData));
         return processData(stageData);
     }
 
@@ -61,7 +60,7 @@ public abstract class Analyser {
         // 1 -> [33, 100, 33]
         Map<Integer, int[]> musicData = new HashMap<>();
         final int useLine = 2;
-        read_csv_file(file, (line, index) -> {
+        readCsvFile(file, (line, index) -> {
             if (index >= useLine) {
                 int[] array = Arrays.stream(line.split(",")).skip(2).limit(3).mapToInt(Integer::parseInt).toArray();
                 musicData.put(index - useLine, array);
@@ -144,11 +143,6 @@ public abstract class Analyser {
     public static int parseInt(String raw, int defaultValue) {
         String value = trim(raw, "[^0-9]");
         return value.isEmpty() ? defaultValue : Integer.parseInt(value);
-    }
-
-    public static boolean isInteger(String str) {
-        Pattern pattern = Pattern.compile("^[-+]?\\d*$");
-        return pattern.matcher(str).matches();
     }
 
 }
