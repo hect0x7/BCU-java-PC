@@ -744,10 +744,10 @@ public class StageEditPage extends Page {
                     // 12
                     Integer mult_atk = seperated ? null : line.mult_atk;
                     // 13
-                    int negativeFlag = line.spawn_0 < 0 ? 1 : 0;
+                    Integer negativeFlag = line.spawn_0 < 0 ? 1 : null;
 
                     // if 13 is 1, 11 and 12 should be 0 as placeholder
-                    if (negativeFlag == 1 && mult_atk_holder == null) {
+                    if (negativeFlag != null && mult_atk_holder == null) {
                         mult_atk_holder = 0;
                         mult_atk = 0;
                     }
